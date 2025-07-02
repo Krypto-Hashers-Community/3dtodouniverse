@@ -2,6 +2,10 @@
 
 An immersive 3D TODO application with stunning visual effects, user authentication, and true stereoscopic 3D parallax effects.
 
+## Live Demo
+
+**[Try the Live App](https://3dtodouniverse.vercel.app/)**
+
 ## Screenshots
 ![image](https://github.com/user-attachments/assets/a741d215-e07e-41f4-bdff-c6b4e18e4582)
 ![image](https://github.com/user-attachments/assets/3dd0bfe3-771c-4f19-b812-c0f743ff7676)
@@ -11,9 +15,6 @@ An immersive 3D TODO application with stunning visual effects, user authenticati
 
 
 
-## Live Demo
-
-**[Try the Live App](https://3dtodouniverse.vercel.app/)**
 
 Demo Account:
 - **Username**: `demo`
@@ -61,10 +62,8 @@ Demo Account:
 
 ## Quick Start
 
-**Option 1: View Live Demo**
-Visit the [live deployment](https://tuba-3d-todo-universe-43hqxmart-tubaakhxns-projects.vercel.app) 
 
-**Option 2: Run Locally**
+**Option 1: Run Locally**
 ```bash
 # Clone the repository
 git clone https://github.com/tubakhxn/3dtodouniverse.git
