@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Tuba's 3D TODO Universe</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            color: #00ffff;
+            overflow: hidden;
+        }
+
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 100;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,255,255,0.3);
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            z-index: 100;
+            background: rgba(0,0,0,0.9);
+            padding: 15px;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            min-width: 300px;
+            box-shadow: 0 0 20px rgba(0,255,255,0.3);
+        }
+
+        button {
+            background: linear-gradient(45deg, #001122, #003344);
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: inherit;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: linear-gradient(45deg, #003344, #005566);
+            box-shadow: 0 0 25px rgba(0,255,255,0.8);
+            transform: scale(1.05) translateY(-2px);
+            color: #ffffff;
+            border-color: #00cccc;
+        }
+
+        button:active {
+            transform: scale(0.98) translateY(0px);
+            box-shadow: 0 0 15px rgba(0,255,255,0.6);
+        }
+
+        button.active {
+            background: linear-gradient(45deg, #004455, #006677);
+            box-shadow: 0 0 30px rgba(0,255,255,1);
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 0 20px rgba(0,255,255,0.8); }
+            100% { box-shadow: 0 0 40px rgba(0,255,255,1); }
+        }
+
+        input:hover {
+            border-color: #00cccc;
+            box-shadow: 0 0 15px rgba(0,255,255,0.5);
+            transform: translateY(-1px);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #00ffff;
+            box-shadow: 0 0 20px rgba(0,255,255,0.8);
+            transform: translateY(-2px);
+            background: rgba(0,0,0,0.9);
+        }
+
+        input {
+            background: rgba(0,0,0,0.7);
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            padding: 8px;
+            margin: 5px;
+            border-radius: 5px;
+            font-family: inherit;
+            width: 250px;
+        }
+
+        .todo-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+            border: 1px solid #00ffff;
+            padding: 10px;
+            border-radius: 5px;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .todo-item {
+            padding: 8px;
+            margin: 3px 0;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.3s;
+            border-left: 3px solid #00ffff;
+            background: rgba(0,255,255,0.1);
+        }
+
+        .todo-item:hover {
+            background: rgba(0,255,255,0.3);
+            transform: translateX(8px) scale(1.02);
+            box-shadow: 0 0 15px rgba(0,255,255,0.4);
+            border-left-color: #00cccc;
+        }
+
+        .todo-item.completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+            border-left-color: #666;
+            color: #666;
+        }
+
+        #mode-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0,255,255,0.8);
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        #mode-indicator.show {
+            opacity: 1;
+        }
+
+        .login-form {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            padding: 30px;
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 200;
+            box-shadow: 0 0 30px rgba(0,255,255,0.5);
+        }
+
+        .login-form h1 {
+            margin-bottom: 20px;
+            font-size: 28px;
+            text-shadow: 0 0 15px rgba(0,255,255,0.8);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            #info {
+                top: 5px;
+                left: 5px;
+                right: 5px;
+                padding: 10px;
+                font-size: 14px;
+                min-width: auto;
+                width: auto;
+            }
+
+            #info h2 {
+                font-size: 18px;
+                margin: 5px 0;
+            }
+
+            #controls {
+                bottom: 5px;
+                left: 5px;
+                right: 5px;
+                padding: 10px;
+                min-width: auto;
+                width: auto;
+                max-height: 40vh;
+                overflow-y: auto;
+            }
+
+            .login-form {
+                width: 90%;
+                max-width: 350px;
+                padding: 20px;
+                font-size: 14px;
+            }
+
+            .login-form h1 {
+                font-size: 20px;
+                margin-bottom: 15px;
+            }
+
+            .login-form h3 {
+                font-size: 16px;
+                margin: 10px 0;
+            }
+
+            button {
+                padding: 12px 15px;
+                margin: 3px;
+                font-size: 12px;
+                min-height: 44px; /* Touch-friendly size */
+                width: 100%;
+                max-width: 200px;
+            }
+
+            input {
+                width: 90%;
+                max-width: 250px;
+                padding: 12px 8px;
+                margin: 5px 0;
+                font-size: 16px; /* Prevents zoom on iOS */
+                min-height: 20px;
+            }
+
+            .todo-list {
+                max-height: 150px;
+                font-size: 14px;
+            }
+
+            .todo-item {
+                padding: 10px 8px;
+                margin: 5px 0;
+                font-size: 13px;
+                word-wrap: break-word;
+            }
+
+            .todo-item button {
+                width: auto;
+                min-width: 60px;
+                padding: 5px 8px;
+                font-size: 10px;
+                min-height: 32px;
+            }
+
+            #mode-indicator {
+                font-size: 18px;
+                text-align: center;
+                max-width: 90%;
+                word-wrap: break-word;
+            }
+
+            /* Stack form elements vertically on mobile */
+            .login-form div {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            /* Improve mobile 3D controls */
+            #controls > div {
+                margin-bottom: 10px;
+            }
+
+            #controls > div:first-child {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            #controls > div:first-child input {
+                margin-bottom: 8px;
+            }
+        }
+
+        /* Tablet Responsive Styles */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            #info {
+                top: 10px;
+                left: 10px;
+                max-width: 250px;
+            }
+
+            #controls {
+                bottom: 10px;
+                right: 10px;
+                max-width: 350px;
+            }
+
+            .login-form {
+                max-width: 400px;
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            button:hover {
+                /* Disable hover effects on touch devices */
+                background: linear-gradient(45deg, #001122, #003344);
+                transform: none;
+                box-shadow: 0 0 20px rgba(0,255,255,0.3);
+            }
+
+            button:active {
+                background: linear-gradient(45deg, #003344, #005566);
+                transform: scale(0.95);
+                box-shadow: 0 0 25px rgba(0,255,255,0.8);
+            }
+
+            .todo-item:hover {
+                background: rgba(0,255,255,0.1);
+                transform: none;
+            }
+
+            .todo-item:active {
+                background: rgba(0,255,255,0.3);
+                transform: scale(0.98);
+            }
+
+            input:hover {
+                border-color: #00ffff;
+                transform: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Login Form -->
+    <div id="loginForm" class="login-form">
+        <h1>TUBA'S 3D TODO UNIVERSE</h1>
+        <div id="loginTab">
+            <h3>LOGIN</h3>
+            <input type="text" id="loginUsername" placeholder="Username">
+            <br>
+            <input type="password" id="loginPassword" placeholder="Password">
+            <br>
+            <button onclick="login()">LOGIN</button>
+            <button onclick="showRegister()">Need Account? REGISTER</button>
+            <div style="margin-top: 15px; font-size: 12px; opacity: 0.8; color: #00cccc;">
+                <p>Demo account:</p>
+                <p>• demo / demo</p>
+            </div>
+        </div>
+        <div id="registerTab" style="display: none;">
+            <h3>REGISTER</h3>
+            <input type="text" id="regUsername" placeholder="Username">
+            <br>
+            <input type="email" id="regEmail" placeholder="Email">
+            <br>
+            <input type="password" id="regPassword" placeholder="Password">
+            <br>
+            <input type="password" id="regConfirm" placeholder="Confirm Password">
+            <br>
+            <button onclick="register()">REGISTER</button>
+            <button onclick="showLogin()">Have Account? LOGIN</button>
+        </div>
+    </div>
+
+    <!-- Info Panel -->
+    <div id="info" class="hidden">
+        <h2>TUBA'S 3D TODO UNIVERSE</h2>
+        <p>Welcome, <span id="currentUser">User</span>!</p>
+        <button onclick="logout()">LOGOUT</button>
+    </div>
+
+    <!-- Controls -->
+    <div id="controls" class="hidden">
+        <div>
+            <input type="text" id="todoInput" placeholder="Enter your mission..." maxlength="30">
+            <button onclick="addTodo()">ADD MISSION</button>
+        </div>
+        <div>
+            <button id="toggle3D" onclick="toggle3DEffect()">ENABLE 3D PARALLAX</button>
+            <button onclick="clearCompleted()">CLEAR COMPLETED</button>
+        </div>
+        <div class="todo-list" id="todoList">
+            <div style="text-align: center; opacity: 0.7;">Add your first mission above</div>
+        </div>
+    </div>
+
+    <!-- Mode Indicator -->
+    <div id="mode-indicator"></div>
+
+    <!-- Include Three.js -->
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+
+    <script>
+        let camera, scene, renderer, effect;
+        let todoMeshes = [], todos = [], lights = [];
+        let use3D = false, isLoggedIn = false;
+        let animationId, currentUser = null;
+        let users = {}; // Store all users and their todos
+
+        // Initialize immediately when page loads
+        window.addEventListener('load', init);
+
+        async function init() {
+            console.log('🚀 Initializing Tuba\'s 3D TODO Universe...');
+            
+            // Load saved users
+            loadUserData();
+            
+            // Create scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000011);
+
+            // Create camera
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 1000);
+            camera.position.set(0, 0, 15);
+
+            // Create renderer with mobile optimizations
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: window.innerWidth > 768, // Disable antialiasing on mobile for performance
+                powerPreference: "high-performance"
+            });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for mobile
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = window.innerWidth > 768; // Disable shadows on mobile
+            if (renderer.shadowMap.enabled) {
+                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            }
+            document.body.appendChild(renderer.domElement);
+
+            // Load ParallaxBarrierEffect dynamically
+            await loadParallaxEffect();
+
+            // Add lighting
+            setupLighting();
+            
+            // Create starfield (reduced complexity on mobile)
+            createStarfield();
+
+            // Event listeners
+            document.getElementById('todoInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') addTodo();
+            });
+
+            // Add touch event listeners for mobile
+            if ('ontouchstart' in window) {
+                addTouchSupport();
+            }
+
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('orientationchange', onOrientationChange);
+
+            // Start animation
+            animate();
+
+            console.log('✅ Universe initialized!');
+        }
+
+        function addTouchSupport() {
+            // Add touch-friendly interactions
+            const canvas = renderer.domElement;
+            
+            // Prevent default touch behaviors that might interfere
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+            }, { passive: false });
+            
+            canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+            }, { passive: false });
+            
+            // Add double-tap to toggle 3D effect
+            let lastTap = 0;
+            canvas.addEventListener('touchend', (e) => {
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTap;
+                if (tapLength < 500 && tapLength > 0) {
+                    if (isLoggedIn) {
+                        toggle3DEffect();
+                    }
+                }
+                lastTap = currentTime;
+            });
+            
+            console.log('📱 Touch support enabled - double-tap canvas to toggle 3D!');
+        }
+
+        function onOrientationChange() {
+            setTimeout(() => {
+                onWindowResize();
+            }, 100);
+        }
+
+        async function loadParallaxEffect() {
+            try {
+                // Try to import ParallaxBarrierEffect as ES6 module
+                const { ParallaxBarrierEffect } = await import('https://unpkg.com/three@0.160.0/examples/jsm/effects/ParallaxBarrierEffect.js');
+                effect = new ParallaxBarrierEffect(renderer);
+                effect.setSize(window.innerWidth, window.innerHeight);
+                console.log('✅ ParallaxBarrierEffect loaded successfully');
+            } catch (error) {
+                console.warn('❌ ParallaxBarrierEffect failed to load:', error);
+                console.log('🔄 Creating enhanced fallback 3D effect...');
+                effect = createEnhancedFallback3DEffect();
+            }
+        }
+
+        function createEnhancedFallback3DEffect() {
+            // Create a more visible and impressive 3D effect as fallback
+            return {
+                render: function(scene, camera) {
+                    const eyeSeparation = 0.064;
+                    const originalPosition = camera.position.x;
+                    const originalAspect = camera.aspect;
+                    
+                    // Clear the screen
+                    renderer.setScissorTest(false);
+                    renderer.clear();
+                    renderer.setScissorTest(true);
+                    
+                    // Left eye (cyan tint for red-cyan 3D glasses effect)
+                    camera.position.x = originalPosition - eyeSeparation / 2;
+                    camera.aspect = originalAspect / 2;
+                    camera.updateProjectionMatrix();
+                    
+                    renderer.setScissor(0, 0, window.innerWidth / 2, window.innerHeight);
+                    renderer.setViewport(0, 0, window.innerWidth / 2, window.innerHeight);
+                    
+                    // Add cyan tint overlay
+                    scene.overrideMaterial = new THREE.MeshBasicMaterial({ 
+                        color: 0x00ffff, 
+                        transparent: true, 
+                        opacity: 0.3,
+                        blending: THREE.AdditiveBlending
+                    });
+                    renderer.render(scene, camera);
+                    scene.overrideMaterial = null;
+                    renderer.render(scene, camera);
+                    
+                    // Right eye (red tint)
+                    camera.position.x = originalPosition + eyeSeparation / 2;
+                    renderer.setScissor(window.innerWidth / 2, 0, window.innerWidth / 2, window.innerHeight);
+                    renderer.setViewport(window.innerWidth / 2, 0, window.innerWidth / 2, window.innerHeight);
+                    
+                    // Add red tint overlay
+                    scene.overrideMaterial = new THREE.MeshBasicMaterial({ 
+                        color: 0xff0040, 
+                        transparent: true, 
+                        opacity: 0.2,
+                        blending: THREE.AdditiveBlending
+                    });
+                    renderer.render(scene, camera);
+                    scene.overrideMaterial = null;
+                    renderer.render(scene, camera);
+                    
+                    // Reset camera and viewport
+                    camera.position.x = originalPosition;
+                    camera.aspect = originalAspect;
+                    camera.updateProjectionMatrix();
+                    renderer.setScissorTest(false);
+                    renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+                },
+                setSize: function(width, height) {
+                    // Handled by main renderer
+                }
+            };
+        }
+
+        function loadUserData() {
+            const saved = localStorage.getItem('tubasTodoUsers');
+            if (saved) {
+                users = JSON.parse(saved);
+                console.log('📚 Loaded user data:', Object.keys(users));
+            } else {
+                // Create demo user with sample data
+                users = {
+                    'demo': {
+                        password: 'demo',
+                        email: 'demo@example.com',
+                        todos: [
+                            { id: 1, text: 'Welcome to the Universe!', completed: false },
+                            { id: 2, text: 'Test the 3D Parallax effect', completed: false },
+                            { id: 3, text: 'Add your own missions', completed: false }
+                        ]
+                    }
+                };
+                saveUserData();
+                console.log('✨ Created demo user: demo/demo');
+            }
+        }
+
+        function saveUserData() {
+            localStorage.setItem('tubasTodoUsers', JSON.stringify(users));
+            console.log('💾 User data saved');
+        }
+
+        function showLogin() {
+            document.getElementById('loginTab').style.display = 'block';
+            document.getElementById('registerTab').style.display = 'none';
+        }
+
+        function showRegister() {
+            document.getElementById('loginTab').style.display = 'none';
+            document.getElementById('registerTab').style.display = 'block';
+        }
+
+        function register() {
+            const username = document.getElementById('regUsername').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirm = document.getElementById('regConfirm').value;
+
+            if (!username || !email || !password) {
+                showModeIndicator('Please fill all fields!', 2000);
+                return;
+            }
+
+            if (password !== confirm) {
+                showModeIndicator('Passwords do not match!', 2000);
+                return;
+            }
+
+            if (users[username]) {
+                showModeIndicator('Username already exists!', 2000);
+                return;
+            }
+
+            // Create new user
+            users[username] = {
+                password: password,
+                email: email,
+                todos: []
+            };
+
+            saveUserData();
+            showModeIndicator('Account created successfully!', 2000);
+            
+            // Clear form and show login
+            document.getElementById('regUsername').value = '';
+            document.getElementById('regEmail').value = '';
+            document.getElementById('regPassword').value = '';
+            document.getElementById('regConfirm').value = '';
+            showLogin();
+        }
+
+        function login() {
+            let username, password;
+            
+            if (document.getElementById('loginUsername')) {
+                username = document.getElementById('loginUsername').value.trim();
+                password = document.getElementById('loginPassword').value;
+            }
+
+            if (!username) {
+                showModeIndicator('Please enter username!', 2000);
+                return;
+            }
+
+            if (!users[username]) {
+                showModeIndicator('User not found! Try: demo/demo', 3000);
+                return;
+            }
+
+            if (users[username].password !== password) {
+                showModeIndicator('Wrong password!', 2000);
+                return;
+            }
+
+            // Successful login
+            currentUser = username;
+            document.getElementById('currentUser').textContent = username.toUpperCase();
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('info').classList.remove('hidden');
+            document.getElementById('controls').classList.remove('hidden');
+            isLoggedIn = true;
+
+            // Load user's todos
+            loadUserTodos();
+            
+            showModeIndicator(`WELCOME BACK, ${username.toUpperCase()}!`, 3000);
+            
+            // Clear login form
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+        }
+
+        function loadUserTodos() {
+            // Clear existing todos
+            todos = [];
+            todoMeshes.forEach(mesh => scene.remove(mesh));
+            todoMeshes = [];
+
+            // Load user's todos
+            if (users[currentUser] && users[currentUser].todos) {
+                users[currentUser].todos.forEach(todo => {
+                    todos.push(todo);
+                    createTodo3D(todo);
+                });
+            }
+            
+            updateTodoDisplay();
+        }
+
+        function logout() {
+            // Save current todos to user
+            if (currentUser && users[currentUser]) {
+                users[currentUser].todos = todos;
+                saveUserData();
+            }
+
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('info').classList.add('hidden');
+            document.getElementById('controls').classList.add('hidden');
+            isLoggedIn = false;
+            currentUser = null;
+            
+            // Reset everything
+            todos = [];
+            todoMeshes.forEach(mesh => scene.remove(mesh));
+            todoMeshes = [];
+            use3D = false;
+            document.getElementById('toggle3D').textContent = 'ENABLE 3D PARALLAX';
+            document.getElementById('toggle3D').classList.remove('active');
+            updateTodoDisplay();
+            showLogin(); // Show login tab
+        }
+
+        function setupLighting() {
+            // Ambient light
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+            scene.add(ambientLight);
+            lights.push(ambientLight);
+
+            // Main directional light
+            const mainLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            mainLight.position.set(5, 5, 5);
+            mainLight.castShadow = true;
+            scene.add(mainLight);
+            lights.push(mainLight);
+
+            // Colored accent lights
+            const blueLight = new THREE.PointLight(0x00ffff, 1, 50);
+            blueLight.position.set(-10, 0, 10);
+            scene.add(blueLight);
+            lights.push(blueLight);
+
+            const redLight = new THREE.PointLight(0xff0040, 0.8, 50);
+            redLight.position.set(10, 0, -10);
+            scene.add(redLight);
+            lights.push(redLight);
+        }
+
+        function createStarfield() {
+            const geometry = new THREE.BufferGeometry();
+            const positions = [];
+            const colors = [];
+
+            // Reduce star count on mobile for better performance
+            const starCount = window.innerWidth > 768 ? 1000 : 400;
+
+            for (let i = 0; i < starCount; i++) {
+                positions.push(
+                    (Math.random() - 0.5) * 200,
+                    (Math.random() - 0.5) * 200,
+                    (Math.random() - 0.5) * 200
+                );
+
+                const color = new THREE.Color();
+                color.setHSL(Math.random(), 0.7, 0.5 + Math.random() * 0.5);
+                colors.push(color.r, color.g, color.b);
+            }
+
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: window.innerWidth > 768 ? 2 : 3, // Larger stars on mobile for visibility
+                transparent: true,
+                opacity: 0.8,
+                vertexColors: true
+            });
+
+            const stars = new THREE.Points(geometry, material);
+            scene.add(stars);
+        }
+
+        function addTodo() {
+            const input = document.getElementById('todoInput');
+            const text = input.value.trim();
+            
+            if (text) {
+                const todo = { 
+                    id: Date.now(), 
+                    text, 
+                    completed: false,
+                    createdAt: new Date().toISOString()
+                };
+                todos.push(todo);
+                createTodo3D(todo);
+                updateTodoDisplay();
+                input.value = '';
+                
+                // Save to user
+                if (currentUser) {
+                    users[currentUser].todos = todos;
+                    saveUserData();
+                }
+                
+                showModeIndicator('MISSION ADDED!', 1000);
+            }
+        }
+
+        function createTodo3D(todo) {
+            // Create 3D representation
+            const geometry = new THREE.BoxGeometry(2, 0.8, 0.5);
+            const material = new THREE.MeshLambertMaterial({
+                color: todo.completed ? 0x666666 : new THREE.Color().setHSL(Math.random(), 0.8, 0.6),
+                transparent: true,
+                opacity: 0.9
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
+            
+            // Position in 3D space
+            const index = todos.indexOf(todo);
+            const angle = (index / Math.max(todos.length, 1)) * Math.PI * 2;
+            const radius = 5 + (index % 3) * 2;
+            
+            mesh.position.set(
+                Math.cos(angle) * radius,
+                (Math.sin(index * 0.7) * 3),
+                Math.sin(angle) * radius
+            );
+
+            // Add wireframe for cool effect
+            const wireframe = new THREE.WireframeGeometry(geometry);
+            const wireframeMaterial = new THREE.LineBasicMaterial({ 
+                color: 0x00ffff, 
+                transparent: true, 
+                opacity: 0.5 
+            });
+            const wireframeMesh = new THREE.LineSegments(wireframe, wireframeMaterial);
+            mesh.add(wireframeMesh);
+
+            mesh.userData = { todo, index };
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            
+            todoMeshes.push(mesh);
+            scene.add(mesh);
+        }
+
+        function updateTodoDisplay() {
+            const list = document.getElementById('todoList');
+            
+            if (todos.length === 0) {
+                list.innerHTML = '<div style="text-align: center; opacity: 0.7;">Add your first mission above</div>';
+                return;
+            }
+            
+            list.innerHTML = '';
+            todos.forEach((todo, index) => {
+                const div = document.createElement('div');
+                div.className = 'todo-item' + (todo.completed ? ' completed' : '');
+                div.innerHTML = `
+                    <span>${todo.text}</span>
+                    <button onclick="toggleTodo(${index})" style="float: right; padding: 2px 8px; font-size: 12px;">
+                        ${todo.completed ? 'UNDO' : 'DONE'}
+                    </button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function toggleTodo(index) {
+            todos[index].completed = !todos[index].completed;
+            
+            // Update 3D representation
+            if (todoMeshes[index]) {
+                todoMeshes[index].material.color.setHex(
+                    todos[index].completed ? 0x666666 : new THREE.Color().setHSL(Math.random(), 0.8, 0.6).getHex()
+                );
+                todoMeshes[index].material.opacity = todos[index].completed ? 0.5 : 0.9;
+            }
+            
+            updateTodoDisplay();
+            
+            // Save to user
+            if (currentUser) {
+                users[currentUser].todos = todos;
+                saveUserData();
+            }
+            
+            showModeIndicator(todos[index].completed ? 'MISSION COMPLETED!' : 'MISSION REACTIVATED!', 1000);
+        }
+
+        function clearCompleted() {
+            const completedIndices = [];
+            todos.forEach((todo, index) => {
+                if (todo.completed) {
+                    completedIndices.push(index);
+                }
+            });
+            
+            // Remove from scene (in reverse order to maintain indices)
+            completedIndices.reverse().forEach(index => {
+                scene.remove(todoMeshes[index]);
+                todoMeshes.splice(index, 1);
+                todos.splice(index, 1);
+            });
+            
+            updateTodoDisplay();
+            
+            // Save to user
+            if (currentUser) {
+                users[currentUser].todos = todos;
+                saveUserData();
+            }
+            
+            if (completedIndices.length > 0) {
+                showModeIndicator('COMPLETED MISSIONS CLEARED!', 1000);
+            }
+        }
+
+        function toggle3DEffect() {
+            if (!effect) {
+                showModeIndicator('3D EFFECT NOT AVAILABLE', 2000);
+                return;
+            }
+            
+            use3D = !use3D;
+            const button = document.getElementById('toggle3D');
+            
+            if (use3D) {
+                button.textContent = 'DISABLE 3D PARALLAX';
+                button.classList.add('active');
+                
+                // Spread todos in depth for dramatic 3D effect
+                todoMeshes.forEach((mesh, index) => {
+                    mesh.position.z = (index - todoMeshes.length / 2) * 8; // Even more separation
+                    mesh.scale.setScalar(1.8); // Bigger scale
+                    
+                    // Add intense glow effect
+                    mesh.material.emissive = new THREE.Color(0x002244);
+                    mesh.material.emissiveIntensity = 0.5;
+                    
+                    // Add wireframe glow
+                    if (mesh.children[0]) {
+                        mesh.children[0].material.opacity = 1.0;
+                        mesh.children[0].material.color.setHex(0x00ffff);
+                    }
+                });
+                
+                // Change scene background for 3D mode
+                scene.background = new THREE.Color(0x000022);
+                
+                showModeIndicator('🌌 3D PARALLAX BARRIER ACTIVE! 🌌', 3000);
+                console.log('✅ 3D Parallax enabled - side-by-side stereo view active');
+            } else {
+                button.textContent = 'ENABLE 3D PARALLAX';
+                button.classList.remove('active');
+                
+                // Reset positions and effects
+                todoMeshes.forEach((mesh, index) => {
+                    const angle = (index / Math.max(todoMeshes.length, 1)) * Math.PI * 2;
+                    const radius = 5 + (index % 3) * 2;
+                    
+                    mesh.position.set(
+                        Math.cos(angle) * radius,
+                        Math.sin(index * 0.7) * 3,
+                        Math.sin(angle) * radius
+                    );
+                    mesh.scale.setScalar(1);
+                    
+                    // Remove glow
+                    mesh.material.emissive = new THREE.Color(0x000000);
+                    mesh.material.emissiveIntensity = 0;
+                    
+                    // Reset wireframe
+                    if (mesh.children[0]) {
+                        mesh.children[0].material.opacity = 0.5;
+                        mesh.children[0].material.color.setHex(0x00ffff);
+                    }
+                });
+                
+                // Reset scene background
+                scene.background = new THREE.Color(0x000011);
+                
+                showModeIndicator('NORMAL 3D MODE', 1000);
+                console.log('✅ Normal 3D mode');
+            }
+        }
+
+        function showModeIndicator(text, duration = 2000) {
+            const indicator = document.getElementById('mode-indicator');
+            indicator.textContent = text;
+            indicator.classList.add('show');
+            
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, duration);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            if (effect && effect.setSize) {
+                effect.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+
+        function animate() {
+            animationId = requestAnimationFrame(animate);
+
+            const time = Date.now() * 0.001;
+
+            // Animate todos
+            todoMeshes.forEach((mesh, index) => {
+                mesh.rotation.x += 0.01;
+                mesh.rotation.y += 0.02;
+                mesh.rotation.z += 0.005;
+                
+                // Floating animation
+                mesh.position.y += Math.sin(time * 2 + index) * 0.01;
+                
+                // Gentle pulsing
+                const baseScale = use3D ? 1.5 : 1;
+                const scale = baseScale * (1 + Math.sin(time * 3 + index) * 0.05);
+                mesh.scale.setScalar(Math.max(0.8, scale));
+            });
+
+            // Animate lights
+            if (lights[2]) { // Blue light
+                lights[2].position.x = Math.sin(time) * 15;
+                lights[2].position.z = Math.cos(time) * 15;
+            }
+            
+            if (lights[3]) { // Red light
+                lights[3].position.x = Math.cos(time * 0.7) * 12;
+                lights[3].position.z = Math.sin(time * 0.7) * 12;
+            }
+
+            // Camera gentle movement
+            camera.position.x = Math.sin(time * 0.3) * 2;
+            camera.position.y = Math.cos(time * 0.2) * 1;
+            camera.lookAt(0, 0, 0);
+
+            // Render with appropriate effect
+            if (use3D && effect) {
+                effect.render(scene, camera);
+            } else {
+                renderer.render(scene, camera);
+            }
+        }
+    </script>
+</body>
+</html>

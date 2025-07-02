@@ -1,0 +1,16 @@
+{
+  "name": "tuba-3d-todo-universe",
+  "version": "1.0.0",
+  "description": "Tuba's immersive 3D TODO Universe with login system and parallax effects",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve .",
+    "build": "echo 'No build step required for static site'"
+  },
+  "keywords": ["3d", "todo", "threejs", "parallax", "cyberpunk"],
+  "author": "Tuba",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.0.0"
+  }
+}

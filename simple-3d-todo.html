@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Simple 3D TODO List - ParallaxBarrier</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        body {
+            background-color: #000;
+            margin: 0;
+            font-family: Monospace;
+            font-size: 13px;
+            line-height: 24px;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        #info {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            z-index: 100;
+            display: block;
+        }
+
+        #todo-panel {
+            position: absolute;
+            top: 50px;
+            left: 10px;
+            width: 300px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #fff;
+            padding: 10px;
+            z-index: 100;
+        }
+
+        .todo-input {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #fff;
+            color: #fff;
+        }
+
+        .todo-item {
+            background: rgba(255, 255, 255, 0.1);
+            margin: 5px 0;
+            padding: 5px;
+            border: 1px solid #fff;
+            cursor: pointer;
+        }
+
+        .todo-item.completed {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid #fff;
+            color: #fff;
+            padding: 5px 10px;
+            cursor: pointer;
+            margin: 2px;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="info">
+        <strong>3D TODO List with ParallaxBarrier Effect</strong><br>
+        <button id="toggle3d">Toggle 3D Effect</button>
+    </div>
+
+    <div id="todo-panel">
+        <h3>TODO List</h3>
+        <input type="text" id="todo-input" class="todo-input" placeholder="Enter todo item...">
+        <button onclick="addTodo()">Add TODO</button>
+        <div id="todo-list"></div>
+    </div>
+
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.160.0/examples/js/effects/ParallaxBarrierEffect.js"></script>
+
+    <script>
+        let camera, scene, renderer, effect;
+        let todoObjects = [];
+        let todos = [];
+        let use3D = false;
+
+        init();
+        animate();
+
+        function init() {
+            // Create scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x101030);
+
+            // Create camera
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 100);
+            camera.position.z = 10;
+
+            // Create renderer
+            renderer = new THREE.WebGLRenderer();
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Create ParallaxBarrier effect
+            effect = new THREE.ParallaxBarrierEffect(renderer);
+            effect.setSize(window.innerWidth, window.innerHeight);
+
+            // Add lighting
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(1, 1, 1);
+            scene.add(directionalLight);
+
+            // Create initial todo items in 3D
+            createInitialTodos();
+
+            // Event listeners
+            document.getElementById('toggle3d').addEventListener('click', toggle3DEffect);
+            document.getElementById('todo-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addTodo();
+                }
+            });
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function createInitialTodos() {
+            const initialTodos = [
+                'Learn Three.js',
+                'Create 3D TODO app',
+                'Test ParallaxBarrier effect'
+            ];
+
+            initialTodos.forEach(text => {
+                addTodoItem(text);
+            });
+        }
+
+        function addTodo() {
+            const input = document.getElementById('todo-input');
+            const text = input.value.trim();
+            
+            if (text) {
+                addTodoItem(text);
+                input.value = '';
+            }
+        }
+
+        function addTodoItem(text) {
+            const todo = {
+                id: Date.now(),
+                text: text,
+                completed: false
+            };
+
+            todos.push(todo);
+            createTodo3DObject(todo);
+            updateTodoList();
+        }
+
+        function createTodo3DObject(todo) {
+            // Create 3D representation of todo
+            const geometry = new THREE.BoxGeometry(2, 0.5, 0.3);
+            const material = new THREE.MeshLambertMaterial({
+                color: todo.completed ? 0x666666 : 0x00aaff
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
+            
+            // Position todos in a vertical list in 3D space
+            const index = todos.indexOf(todo);
+            mesh.position.set(
+                (Math.random() - 0.5) * 4, // Random X position
+                3 - index * 0.8,           // Vertical spacing
+                (Math.random() - 0.5) * 2   // Random depth for 3D effect
+            );
+
+            // Add text texture (simplified)
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 256;
+            canvas.height = 64;
+            
+            context.fillStyle = '#000000';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.fillStyle = '#ffffff';
+            context.font = '16px Arial';
+            context.fillText(todo.text.substring(0, 20), 10, 40);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const textMaterial = new THREE.MeshBasicMaterial({ map: texture });
+            
+            const textGeometry = new THREE.PlaneGeometry(2, 0.4);
+            const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+            textMesh.position.copy(mesh.position);
+            textMesh.position.z += 0.2;
+
+            // Store reference
+            mesh.userData = { todo: todo, textMesh: textMesh };
+            todoObjects.push(mesh);
+
+            scene.add(mesh);
+            scene.add(textMesh);
+
+            return mesh;
+        }
+
+        function updateTodoList() {
+            const todoList = document.getElementById('todo-list');
+            todoList.innerHTML = '';
+
+            todos.forEach((todo, index) => {
+                const div = document.createElement('div');
+                div.className = 'todo-item' + (todo.completed ? ' completed' : '');
+                div.textContent = todo.text;
+                div.onclick = () => toggleTodo(index);
+                todoList.appendChild(div);
+            });
+        }
+
+        function toggleTodo(index) {
+            todos[index].completed = !todos[index].completed;
+            
+            // Update 3D object
+            const mesh = todoObjects[index];
+            if (mesh) {
+                mesh.material.color.setHex(todos[index].completed ? 0x666666 : 0x00aaff);
+            }
+
+            updateTodoList();
+        }
+
+        function toggle3DEffect() {
+            use3D = !use3D;
+            
+            const button = document.getElementById('toggle3d');
+            button.textContent = use3D ? 'Disable 3D Effect' : 'Enable 3D Effect';
+
+            if (use3D) {
+                // Spread todos more in depth for better 3D effect
+                todoObjects.forEach((mesh, index) => {
+                    mesh.position.z = (index - todoObjects.length / 2) * 2;
+                });
+            } else {
+                // Flatten todos for normal view
+                todoObjects.forEach(mesh => {
+                    mesh.position.z = 0;
+                });
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            effect.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Gentle rotation for better 3D perception
+            todoObjects.forEach((mesh, index) => {
+                mesh.rotation.y += 0.01;
+                mesh.rotation.x = Math.sin(Date.now() * 0.001 + index) * 0.1;
+            });
+
+            // Render with appropriate effect
+            if (use3D) {
+                effect.render(scene, camera);
+            } else {
+                renderer.render(scene, camera);
+            }
+        }
+    </script>
+</body>
+</html>

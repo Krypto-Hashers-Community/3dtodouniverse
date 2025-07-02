@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "name": "tuba-3d-todo-universe",
+  "builds": [
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
