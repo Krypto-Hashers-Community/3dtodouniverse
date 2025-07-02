@@ -2,15 +2,18 @@
 
 An immersive 3D TODO application with stunning visual effects, user authentication, and true stereoscopic 3D parallax effects.
 
-## Demo Video
+## Screenshots
+![image](https://github.com/user-attachments/assets/a741d215-e07e-41f4-bdff-c6b4e18e4582)
+![image](https://github.com/user-attachments/assets/3dd0bfe3-771c-4f19-b812-c0f743ff7676)
 
-A screen recording demonstration is available in the repository:
-- **File**: `demo-video.mp4` (Upload your .mp4 file to see the 3D effects in action)
-- **Shows**: Login system, 3D animations, parallax effects, and mobile responsiveness
+![image](https://github.com/user-attachments/assets/ee44a0a2-6362-41ef-b72b-5810df9a8dfd)
+
+
+
 
 ## Live Demo
 
-**[Try the Live App](https://tuba-3d-todo-universe-43hqxmart-tubaakhxns-projects.vercel.app)**
+**[Try the Live App](https://3dtodouniverse.vercel.app/)**
 
 Demo Account:
 - **Username**: `demo`
@@ -87,12 +90,4 @@ open index.html
 | Safari  | Full | Full |
 | Edge    | Full | Full |
 
-## Author
 
-**Tuba Khan**
-- GitHub: [@tubakhxn](https://github.com/tubakhxn)
-- Repository: [3dtodouniverse](https://github.com/tubakhxn/3dtodouniverse)
-
----
-
-Built with passion for immersive web experiences
